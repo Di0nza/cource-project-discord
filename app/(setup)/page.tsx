@@ -1,7 +1,10 @@
 import React from 'react';
 import {initialProfile} from "@/lib/initial-profile";
-import Server from "@/shemas/server";
 import {redirect} from "next/navigation"
+import { UserButton } from "@clerk/nextjs";
+import {InitialModal} from "@/components/modals/initial-modal";
+
+const Server = require("@/shemas/server");
 
 const SetupPage = async () => {
 
@@ -19,7 +22,7 @@ const SetupPage = async () => {
 
     return (
         <div>
-            Create a Server
+            <InitialModal/>
         </div>
     );
 };
