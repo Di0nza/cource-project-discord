@@ -1,6 +1,6 @@
 import {currentUser, redirectToSignIn} from "@clerk/nextjs";
 import {connect} from "@/lib/db"
-const ProfileModel = require("@/shemas/profile")
+const ProfileModel = require("@/schemas/profile")
 
 connect();
 
