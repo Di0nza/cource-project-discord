@@ -1,30 +1,14 @@
-import React from 'react';
-import {currentProfile} from "@/lib/currentProfile";
 import {connect} from "@/lib/db"
-import {redirectToSignIn} from "@clerk/nextjs";
-import {redirect} from "next/navigation";
-import {ServerHeader} from "@/components/server/server-header";
 import mongoose from '@/schemas/mongoose';
 
-const ServerModel = require("@/schemas/server");
-
-
-interface ServerSidebarProps {
-    serverId: string;
-}
-
-export const ServerSidebar = async ({serverId}: ServerSidebarProps) => {
+const ServerModel = require("@/schemas/server")
 
 connect();
 
-    const profile = await currentProfile();
-
-    if (!profile) {
-        return redirectToSignIn();
-    }
+export const fullServer = async (id:string) => {
 
     const server = await ServerModel.aggregate([
-        { $match: { _id: new mongoose.Types.ObjectId(serverId) } },
+        { $match: { _id: new mongoose.Types.ObjectId(id) } },
         {
             $lookup: {
                 from: 'members',
@@ -76,30 +60,5 @@ connect();
         // Другие этапы агрегации, если необходимо
     ]);
 
-    // @ts-ignore
-    const textChannels = server[0].channels.filter((channel) => channel.type === "TEXT")
-    // @ts-ignore
-    const audioChannels = server[0].channels.filter((channel) => channel.type === "AUDIO")
-    // @ts-ignore
-    const videoChannels = server[0].channels.filter((channel) => channel.type === "VIDEO")
-
-    if (!server) {
-        return redirect("/");
-    }
-
-    //console.log(server[0].members)
-    // @ts-ignore
-    const role = server[0].members.find((member) => (member.profileId).toString() === profile.id)?.role;
-    //console.log('Role:', role);
-
-
-
-    return (
-        <div className="flex flex-col h-full text-primary w-full dark:bg-[#2B2D31] bg-[#F2F3F5]">
-            <ServerHeader
-                server={server[0]}
-                role={role}
-            />
-        </div>
-    );
-};
+    return server[0];
+}

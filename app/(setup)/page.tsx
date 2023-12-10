@@ -15,15 +15,17 @@ const SetupPage = async () => {
 
     const member = await MemberModel.findOne({profileId: profile.id})
 
-    const server = await ServerModel.findOne({
-        members: member._id
-    });
+    if(member){
+        const server = await ServerModel.findOne({
+            members: member._id
+        });
 
-    console.log(server)
+        console.log(server)
 
 
-    if(server){
-        return redirect(`/servers/${server.id}`)
+        if(server){
+            return redirect(`/servers/${server.id}`)
+        }
     }
 
     return (
