@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
+import { MemberRole } from "@prisma/client";
 
 import { currentProfile } from "@/lib/currentProfile";
-import { fullServer } from "@/lib/fullServer";
 import { connect } from "@/lib/db";
 import mongoose from "@/schemas/mongoose";
 
+const ServerModel = require("@/schemas/server");
+const ChannelModel = require("@/schemas/channel");
 
-const MemberModel = require("@/schemas/member")
-const ServerModel = require("@/schemas/server")
-
+connect();
 
 export async function DELETE(
     req: Request,
-    { params }: { params: { memberId: string } }
+    { params }: { params: { channelId: string } }
 ) {
     try {
         const profile = await currentProfile();
@@ -21,22 +21,26 @@ export async function DELETE(
         const serverId = searchParams.get("serverId");
 
         if (!profile) {
-            return new NextResponse("Unauthorized" ,{ status: 401 });
+            return new NextResponse("Unauthorized", { status: 401 });
         }
 
         if (!serverId) {
             return new NextResponse("Server ID missing", { status: 400 });
         }
 
-        if (!params.memberId) {
-            return new NextResponse("Member ID missing", { status: 400 });
+        if (!params.channelId) {
+            return new NextResponse("Channel ID missing", { status: 400 });
         }
 
-        const deletedMember = await MemberModel.findByIdAndDelete(params.memberId);
+        const deletedChannel = await ChannelModel.findByIdAndDelete(params.channelId);
+
 
         const server = await ServerModel.findById(serverId)
+        console.log(server.channels)
 
-        server.members = server.members.filter((member)=> member.toString() !== params.memberId);
+        console.log(server.channels[2].toString() , " ", params.channelId)
+
+        server.channels = server.channels.filter((channel)=> channel.toString() !== params.channelId);
 
         await server.save();
 
@@ -95,25 +99,24 @@ export async function DELETE(
             },
         ]);
 
+
         return NextResponse.json(fullServer[0])
     } catch (error) {
-        console.log("[MEMBER_ID_DELETE]", error);
+        console.log("[CHANNEL_ID_DELETE]", error);
         return new NextResponse("Internal Error", { status: 500 });
     }
 }
 
 export async function PATCH(
     req: Request,
-    { params }: { params: { memberId: string } }
+    { params }: { params: { channelId: string } }
 ) {
     try {
         const profile = await currentProfile();
+        const { name, type } = await req.json();
         const { searchParams } = new URL(req.url);
 
-        const { role } = await req.json();
-
         const serverId = searchParams.get("serverId");
-
 
         if (!profile) {
             return new NextResponse("Unauthorized", { status: 401 });
@@ -123,13 +126,21 @@ export async function PATCH(
             return new NextResponse("Server ID missing", { status: 400 });
         }
 
-        if (!params.memberId) {
-            return new NextResponse("Member ID missing", { status: 400 });
+        if (!params.channelId) {
+            return new NextResponse("Channel ID missing", { status: 400 });
         }
 
-        const member = await MemberModel.findById(params.memberId);
-        member.role = role;
-        await member.save();
+        if (name === "general") {
+            return new NextResponse("Name cannot be 'general'", { status: 400 });
+        }
+
+        const channel = await ChannelModel.findById(params.channelId);
+
+        if(type) channel.type = type;
+
+        if(name) channel.name = name;
+
+        await channel.save();
 
         // @ts-ignore
         const fullServer = await ServerModel.aggregate([
@@ -187,10 +198,9 @@ export async function PATCH(
         ]);
 
 
-
         return NextResponse.json(fullServer[0])
     } catch (error) {
-        console.log("[MEMBERS_ID_PATCH]", error);
+        console.log("[CHANNEL_ID_PATCH]", error);
         return new NextResponse("Internal Error", { status: 500 });
     }
 }
