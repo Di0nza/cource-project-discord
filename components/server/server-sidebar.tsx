@@ -69,6 +69,7 @@ connect();
                 name: { $first: "$name" },
                 imageUrl: { $first: "$imageUrl" },
                 inviteCode: { $first: "$inviteCode" },
+                profileId: {$first:"$profileId"},
                 members: { $push: "$members" },
                 channels: { $push: "$channels" }
             }

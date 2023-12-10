@@ -1,24 +1,22 @@
 import {NextResponse} from "next/server";
-import {v4 as uuidv4} from "uuid"
 import {currentProfile} from "@/lib/currentProfile";
 import {redirect} from "next/navigation";
 import {connect} from "@/lib/db"
-import {redirectToSignIn} from "@clerk/nextjs";
-import {ServerSidebar} from "@/components/server/server-sidebar";
 import mongoose from "@/schemas/mongoose";
+import {v4 as uuidv4} from "uuid";
 
 const ServerModel = require("@/schemas/server");
 const MemberModel = require("@/schemas/member");
 
 export async function PATCH(
-    req: Request,
-    {params}: { params: { serverId: string } }
-) {
-    try {
-
+    req:Request,
+    {params}:{params:{serverId:string}}
+){
+    try{
         connect();
 
         const profile = await currentProfile();
+        const {name, imageUrl} = await req.json();
 
         if (!profile) {
             return new NextResponse("Unauthorized", {status: 401});
@@ -31,7 +29,7 @@ export async function PATCH(
         console.log(params.serverId)
         const server = await ServerModel.findOneAndUpdate(
             {_id: params.serverId, profileId: profile.id},
-            {inviteCode: uuidv4()}
+            {name: name, imageUrl: imageUrl}
         );
 
         if (!server) {
@@ -98,8 +96,8 @@ export async function PATCH(
 
         return NextResponse.json(fullServer[0])
 
-    } catch (error) {
-        console.log(error)
-        return new NextResponse("Internal Error", {status: 500})
+    }catch (error){
+        console.log("[SERVER_ID_PATCH]", error);
+        return new NextResponse("Internal Error", {status:500})
     }
 }
