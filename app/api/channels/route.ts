@@ -1,45 +1,56 @@
-import {NextResponse} from "next/server";
-import {v4 as uuidv4} from "uuid"
-import {currentProfile} from "@/lib/currentProfile";
-import {redirect} from "next/navigation";
-import {connect} from "@/lib/db"
-import {redirectToSignIn} from "@clerk/nextjs";
-import {ServerSidebar} from "@/components/server/server-sidebar";
+import { NextResponse } from "next/server";
+import { MemberRole } from "@prisma/client";
+
+import { currentProfile } from "@/lib/currentProfile";
+import { connect } from "@/lib/db";
 import mongoose from "@/schemas/mongoose";
 
 const ServerModel = require("@/schemas/server");
-const MemberModel = require("@/schemas/member");
+const MemberModel = require("@/schemas/member")
+const ChannelModel = require("@/schemas/channel")
 
-export async function PATCH(
-    req: Request,
-    {params}: { params: { serverId: string } }
+connect();
+export async function POST(
+    req: Request
 ) {
     try {
-
-        connect();
-
         const profile = await currentProfile();
+        const { name, type } = await req.json();
+        const { searchParams } = new URL(req.url);
+
+        const serverId = searchParams.get("serverId");
 
         if (!profile) {
-            return new NextResponse("Unauthorized", {status: 401});
+            return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        if (!params.serverId) {
-            return new NextResponse("Server Id Missing", {status: 400});
+        if (!serverId) {
+            return new NextResponse("Server ID missing", { status: 400 });
         }
 
-        console.log(params.serverId)
-        const server = await ServerModel.findOneAndUpdate(
-            {_id: params.serverId, profileId: profile.id},
-            {inviteCode: uuidv4()}
-        );
-
-        if (!server) {
-            return new NextResponse("No such server", {status: 400});
+        if (name === "general") {
+            return new NextResponse("Name cannot be 'general'", { status: 400 });
         }
+
+        const channel = await new ChannelModel({
+            name,
+            type,
+            profileId: profile.id,
+            serverId,
+        })
+
+        const member = await MemberModel.findOne({profileId:profile.id});
+
+        console.log(member.role)
+
+        if(member.role !== "ADMIN" && member.role !== "MODERATOR"){
+            return NextResponse.json("Access Denied", { status: 403 });
+        }
+
+        await channel.save();
 
         const fullServer = await ServerModel.aggregate([
-            { $match: { _id: new mongoose.Types.ObjectId(server._id) } },
+            { $match: { _id: new mongoose.Types.ObjectId(serverId) } },
             {
                 $lookup: {
                     from: 'members',
@@ -91,14 +102,9 @@ export async function PATCH(
             },
         ]);
 
-        console.log(fullServer)
-
-
-
         return NextResponse.json(fullServer[0])
-
     } catch (error) {
-        console.log(error)
-        return new NextResponse("Internal Error", {status: 500})
+        console.log("CHANNELS_POST", error);
+        return new NextResponse("Internal Error", { status: 500 });
     }
 }

@@ -87,7 +87,6 @@ export async function DELETE(
                     channels: { $push: "$channels" }
                 }
             },
-            // Другие этапы агрегации, если необходимо
         ]);
 
         return NextResponse.json(fullServer[0])
@@ -179,7 +178,6 @@ export async function PATCH(
                     channels: { $push: "$channels" }
                 }
             },
-            // Другие этапы агрегации, если необходимо
         ]);
 
 

@@ -7,6 +7,7 @@ import {v4 as uuidv4} from "uuid";
 
 const ServerModel = require("@/schemas/server");
 const MemberModel = require("@/schemas/member");
+const ChannelModel = require("@/schemas/channel")
 
 export async function PATCH(
     req:Request,
@@ -87,7 +88,6 @@ export async function PATCH(
                     channels: { $push: "$channels" }
                 }
             },
-            // Другие этапы агрегации, если необходимо
         ]);
 
         console.log(fullServer)
@@ -99,5 +99,36 @@ export async function PATCH(
     }catch (error){
         console.log("[SERVER_ID_PATCH]", error);
         return new NextResponse("Internal Error", {status:500})
+    }
+}
+
+
+export async function DELETE(
+    req: Request,
+    { params }: { params: { serverId: string } }
+) {
+    try {
+        const profile = await currentProfile();
+
+        if (!profile) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        const server = await ServerModel.findById(params.serverId);
+
+        if(server){
+
+            await MemberModel.deleteMany({serverId: params.serverId});
+
+            await ChannelModel.deleteMany({serverId: params.serverId});
+
+            await server.deleteOne();
+        }
+
+
+        return NextResponse.json(server);
+    } catch (error) {
+        console.log("[SERVER_ID_DELETE]", error);
+        return new NextResponse("Internal Error", { status: 500 });
     }
 }

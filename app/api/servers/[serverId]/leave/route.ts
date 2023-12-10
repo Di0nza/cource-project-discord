@@ -1,45 +1,42 @@
-import {NextResponse} from "next/server";
-import {v4 as uuidv4} from "uuid"
-import {currentProfile} from "@/lib/currentProfile";
-import {redirect} from "next/navigation";
-import {connect} from "@/lib/db"
-import {redirectToSignIn} from "@clerk/nextjs";
-import {ServerSidebar} from "@/components/server/server-sidebar";
+import { NextResponse } from "next/server";
+
+import { currentProfile } from "@/lib/currentProfile";
+import { connect } from "@/lib/db";
 import mongoose from "@/schemas/mongoose";
 
-const ServerModel = require("@/schemas/server");
-const MemberModel = require("@/schemas/member");
 
+const MemberModel = require("@/schemas/member")
+const ServerModel = require("@/schemas/server")
+
+connect();
 export async function PATCH(
     req: Request,
-    {params}: { params: { serverId: string } }
+    { params }: { params: { serverId: string } }
 ) {
     try {
-
-        connect();
-
         const profile = await currentProfile();
 
         if (!profile) {
-            return new NextResponse("Unauthorized", {status: 401});
+            return new NextResponse("Unauthorized", { status: 401 });
         }
 
         if (!params.serverId) {
-            return new NextResponse("Server Id Missing", {status: 400});
+            return new NextResponse("Server ID missing", { status: 400 });
         }
 
-        console.log(params.serverId)
-        const server = await ServerModel.findOneAndUpdate(
-            {_id: params.serverId, profileId: profile.id},
-            {inviteCode: uuidv4()}
-        );
+        const deletedMember = await MemberModel.findOneAndDelete({
+            profileId:profile.id,
+            serverId: params.serverId,
+        });
 
-        if (!server) {
-            return new NextResponse("No such server", {status: 400});
-        }
+        const server = await ServerModel.findById(params.serverId);
+
+        server.members = server.members.filter((member) => member.toString() !== deletedMember.id);
+
+        await server.save()
 
         const fullServer = await ServerModel.aggregate([
-            { $match: { _id: new mongoose.Types.ObjectId(server._id) } },
+            { $match: { _id: new mongoose.Types.ObjectId(params.serverId) } },
             {
                 $lookup: {
                     from: 'members',
@@ -88,17 +85,13 @@ export async function PATCH(
                     members: { $push: "$members" },
                     channels: { $push: "$channels" }
                 }
-            },
+            }
         ]);
-
-        console.log(fullServer)
-
-
 
         return NextResponse.json(fullServer[0])
 
     } catch (error) {
-        console.log(error)
-        return new NextResponse("Internal Error", {status: 500})
+        console.log("[SERVER_ID_LEAVE]", error);
+        return new NextResponse("Internal Error", { status: 500 });
     }
 }

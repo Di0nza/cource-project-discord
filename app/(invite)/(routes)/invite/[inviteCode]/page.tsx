@@ -43,11 +43,14 @@ const InviteCodePage = async ({
 
     }
 
+    const server = await ServerModel.findOne({inviteCode: params.inviteCode})
+
     const newMember = await new MemberModel({
-        profileId: profile._id
+        profileId: profile._id,
+        serverId: server.id
     }).save();
 
-    const server = await ServerModel.findOne({inviteCode: params.inviteCode})
+
     server.members.push(newMember.id)
     await server.save();
 

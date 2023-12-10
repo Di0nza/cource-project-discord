@@ -57,7 +57,6 @@ export const fullServer = async (id:string) => {
                 channels: { $push: "$channels" }
             }
         },
-        // Другие этапы агрегации, если необходимо
     ]);
 
     return server[0];

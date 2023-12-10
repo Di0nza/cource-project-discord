@@ -102,12 +102,7 @@ export const MembersModal = () => {
             setLoadingId("");
         }
     }
-    console.log(server)
 
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
     return (
         <Dialog open={isModalOpen} onOpenChange={onClose}>
             <DialogContent className="bg-white text-black overflow-hidden">
