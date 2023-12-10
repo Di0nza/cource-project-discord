@@ -37,7 +37,7 @@ export async function POST(
             type,
             profileId: profile.id,
             serverId,
-        })
+        }).save();
 
         const member = await MemberModel.findOne({profileId:profile.id});
 
@@ -47,7 +47,12 @@ export async function POST(
             return NextResponse.json("Access Denied", { status: 403 });
         }
 
-        await channel.save();
+
+        const server = await ServerModel.findById(serverId)
+
+        server.channels = [...server.channels, channel.id]
+
+        await server.save();
 
         const fullServer = await ServerModel.aggregate([
             { $match: { _id: new mongoose.Types.ObjectId(serverId) } },
@@ -60,7 +65,7 @@ export async function POST(
                 }
             },
             {
-                $unwind: "$members"
+                $unwind: '$members'
             },
             {
                 $lookup: {
@@ -79,7 +84,7 @@ export async function POST(
                 }
             },
             {
-                $unwind: "$channels"
+                $unwind: '$channels'
             },
             {
                 $lookup: {
@@ -91,16 +96,18 @@ export async function POST(
             },
             {
                 $group: {
-                    _id: "$_id",
-                    name: { $first: "$name" },
-                    imageUrl: { $first: "$imageUrl" },
-                    inviteCode: { $first: "$inviteCode" },
-                    profileId: {$first:"$profileId"},
-                    members: { $push: "$members" },
-                    channels: { $push: "$channels" }
+                    _id: '$_id',
+                    name: { $first: '$name' },
+                    imageUrl: { $first: '$imageUrl' },
+                    inviteCode: { $first: '$inviteCode' },
+                    profileId: { $first: '$profileId' },
+                    serverId: { $first: '$serverId' },
+                    members: { $addToSet: '$members' },
+                    channels: { $addToSet: '$channels' } // используйте $addToSet вместо $push
                 }
             },
         ]);
+
 
         return NextResponse.json(fullServer[0])
     } catch (error) {

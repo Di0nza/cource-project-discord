@@ -47,7 +47,7 @@ export async function DELETE(
                 }
             },
             {
-                $unwind: "$members"
+                $unwind: '$members'
             },
             {
                 $lookup: {
@@ -66,7 +66,7 @@ export async function DELETE(
                 }
             },
             {
-                $unwind: "$channels"
+                $unwind: '$channels'
             },
             {
                 $lookup: {
@@ -78,16 +78,18 @@ export async function DELETE(
             },
             {
                 $group: {
-                    _id: "$_id",
-                    name: { $first: "$name" },
-                    imageUrl: { $first: "$imageUrl" },
-                    inviteCode: { $first: "$inviteCode" },
-                    profileId: {$first:"$profileId"},
-                    members: { $push: "$members" },
-                    channels: { $push: "$channels" }
+                    _id: '$_id',
+                    name: { $first: '$name' },
+                    imageUrl: { $first: '$imageUrl' },
+                    inviteCode: { $first: '$inviteCode' },
+                    profileId: { $first: '$profileId' },
+                    serverId: { $first: '$serverId' },
+                    members: { $addToSet: '$members' },
+                    channels: { $addToSet: '$channels' } // используйте $addToSet вместо $push
                 }
             },
         ]);
+
 
         return NextResponse.json(fullServer[0])
 
@@ -138,7 +140,7 @@ export async function PATCH(
                 }
             },
             {
-                $unwind: "$members"
+                $unwind: '$members'
             },
             {
                 $lookup: {
@@ -157,7 +159,7 @@ export async function PATCH(
                 }
             },
             {
-                $unwind: "$channels"
+                $unwind: '$channels'
             },
             {
                 $lookup: {
@@ -169,16 +171,18 @@ export async function PATCH(
             },
             {
                 $group: {
-                    _id: "$_id",
-                    name: { $first: "$name" },
-                    imageUrl: { $first: "$imageUrl" },
-                    inviteCode: { $first: "$inviteCode" },
-                    profileId: {$first:"$profileId"},
-                    members: { $push: "$members" },
-                    channels: { $push: "$channels" }
+                    _id: '$_id',
+                    name: { $first: '$name' },
+                    imageUrl: { $first: '$imageUrl' },
+                    inviteCode: { $first: '$inviteCode' },
+                    profileId: { $first: '$profileId' },
+                    serverId: { $first: '$serverId' },
+                    members: { $addToSet: '$members' },
+                    channels: { $addToSet: '$channels' } // используйте $addToSet вместо $push
                 }
             },
         ]);
+
 
 
         return NextResponse.json(fullServer[0])

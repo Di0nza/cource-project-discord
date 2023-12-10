@@ -39,7 +39,7 @@ export async function PATCH(
         }
 
         const fullServer = await ServerModel.aggregate([
-            { $match: { _id: new mongoose.Types.ObjectId(server._id) } },
+            { $match: { _id: new mongoose.Types.ObjectId(serverId) } },
             {
                 $lookup: {
                     from: 'members',
@@ -49,7 +49,7 @@ export async function PATCH(
                 }
             },
             {
-                $unwind: "$members"
+                $unwind: '$members'
             },
             {
                 $lookup: {
@@ -68,7 +68,7 @@ export async function PATCH(
                 }
             },
             {
-                $unwind: "$channels"
+                $unwind: '$channels'
             },
             {
                 $lookup: {
@@ -80,16 +80,18 @@ export async function PATCH(
             },
             {
                 $group: {
-                    _id: "$_id",
-                    name: { $first: "$name" },
-                    imageUrl: { $first: "$imageUrl" },
-                    inviteCode: { $first: "$inviteCode" },
-                    profileId: {$first:"$profileId"},
-                    members: { $push: "$members" },
-                    channels: { $push: "$channels" }
+                    _id: '$_id',
+                    name: { $first: '$name' },
+                    imageUrl: { $first: '$imageUrl' },
+                    inviteCode: { $first: '$inviteCode' },
+                    profileId: { $first: '$profileId' },
+                    serverId: { $first: '$serverId' },
+                    members: { $addToSet: '$members' },
+                    channels: { $addToSet: '$channels' } // используйте $addToSet вместо $push
                 }
             },
         ]);
+
 
         console.log(fullServer)
 

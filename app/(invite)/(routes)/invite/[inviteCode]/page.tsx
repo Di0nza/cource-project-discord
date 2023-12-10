@@ -30,7 +30,9 @@ const InviteCodePage = async ({
         return redirect("/");
     }
 
-    const member = await MemberModel.findOne({profileId: profile.id})
+    const server = await ServerModel.findOne({inviteCode: params.inviteCode})
+
+    const member = await MemberModel.findOne({profileId: profile.id, serverId: server._id})
 
     if (member) {
         const existingServer = await ServerModel.findOne({
@@ -43,7 +45,7 @@ const InviteCodePage = async ({
 
     }
 
-    const server = await ServerModel.findOne({inviteCode: params.inviteCode})
+
 
     const newMember = await new MemberModel({
         profileId: profile._id,

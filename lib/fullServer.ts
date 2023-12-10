@@ -8,7 +8,7 @@ connect();
 export const fullServer = async (id:string) => {
 
     const server = await ServerModel.aggregate([
-        { $match: { _id: new mongoose.Types.ObjectId(id) } },
+        { $match: { _id: new mongoose.Types.ObjectId(serverId) } },
         {
             $lookup: {
                 from: 'members',
@@ -18,7 +18,7 @@ export const fullServer = async (id:string) => {
             }
         },
         {
-            $unwind: "$members"
+            $unwind: '$members'
         },
         {
             $lookup: {
@@ -37,7 +37,7 @@ export const fullServer = async (id:string) => {
             }
         },
         {
-            $unwind: "$channels"
+            $unwind: '$channels'
         },
         {
             $lookup: {
@@ -49,15 +49,18 @@ export const fullServer = async (id:string) => {
         },
         {
             $group: {
-                _id: "$_id",
-                name: { $first: "$name" },
-                imageUrl: { $first: "$imageUrl" },
-                inviteCode: { $first: "$inviteCode" },
-                members: { $push: "$members" },
-                channels: { $push: "$channels" }
+                _id: '$_id',
+                name: { $first: '$name' },
+                imageUrl: { $first: '$imageUrl' },
+                inviteCode: { $first: '$inviteCode' },
+                profileId: { $first: '$profileId' },
+                serverId: { $first: '$serverId' },
+                members: { $addToSet: '$members' },
+                channels: { $addToSet: '$channels' } // используйте $addToSet вместо $push
             }
         },
     ]);
+
 
     return server[0];
 }
