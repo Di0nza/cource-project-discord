@@ -11,7 +11,7 @@ import {ModeToggle} from "@/components/mode-toggle";
 import {UserButton} from "@clerk/nextjs";
 
 const ServerModel = require("@/schemas/server");
-const MemberModel = require("@/schemas/member")
+const MemberModel = require("@/schemas/member");
 
 connect();
 
@@ -23,10 +23,13 @@ export const NavigationSidebar = async () => {
         return redirect("/")
     }
 
-    const member = await MemberModel.findOne({profileId: profile.id})
+    const members = await MemberModel.find({profileId: profile.id})
+
+    // @ts-ignore
+    const membersId = members.map(member => member._id);
 
     const servers = await ServerModel.find({
-        members: member._id
+        members: {$in: membersId}
     });
 
     return (

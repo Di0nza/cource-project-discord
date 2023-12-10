@@ -13,20 +13,22 @@ export async function POST(req: Request) {
         const {name, imageUrl} = await req.json();
         const profile = await currentProfile();
 
+        console.log(name)
+        console.log(profile)
+
         if (!profile) {
             return new NextResponse("Unauthorized", {status: 401});
         }
 
+
         const member = await new MemberModel({
-            profileId: profile.id,
-            serverId: "",
+            profileId: profile._id,
             role: "ADMIN"
         }).save();
 
         const channel = await new ChannelModel({
             name: "general",
-            serverId: "",
-            profileId: profile.id
+            profileId: profile._id
         }).save()
 
         const server = await new ServerModel({
@@ -37,6 +39,8 @@ export async function POST(req: Request) {
             channels: [channel.id],
             members: [member.id],
         }).save();
+
+        console.log(server)
 
         await MemberModel.findByIdAndUpdate(member.id, {serverId: server.id});
         await ChannelModel.findByIdAndUpdate(channel.id, {serverId: server.id});
