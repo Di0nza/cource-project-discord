@@ -136,7 +136,7 @@ export const ServerSidebar = async ({serverId}: ServerSidebarProps) => {
                                 label: "Text Channels",
                                 type: "channel",
                                 data: textChannels?.map((channel) => ({
-                                    id: channel.id,
+                                    _id: channel._id,
                                     name: channel.name,
                                     icon: iconMap[channel.type]
                                 }))
@@ -145,7 +145,7 @@ export const ServerSidebar = async ({serverId}: ServerSidebarProps) => {
                                 label: "Voice Channels",
                                 type: "channel",
                                 data: audioChannels?.map((channel) => ({
-                                    id: channel.id,
+                                    _id: channel._id,
                                     name: channel.name,
                                     icon: iconMap[channel.type]
                                 }))
@@ -154,7 +154,7 @@ export const ServerSidebar = async ({serverId}: ServerSidebarProps) => {
                                 label: "Video Channels",
                                 type: "channel",
                                 data: videoChannels?.map((channel) => ({
-                                    id: channel.id,
+                                    _id: channel._id,
                                     name: channel.name,
                                     icon: iconMap[channel.type]
                                 }))
@@ -168,7 +168,7 @@ export const ServerSidebar = async ({serverId}: ServerSidebarProps) => {
                                     );
 
                                     return {
-                                        id: member._id,
+                                        _id: member._id,
                                         name: profile ? profile.name : null,
                                         icon: roleIconMap[member.role],
                                     };

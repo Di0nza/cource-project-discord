@@ -40,7 +40,6 @@ import {Button} from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {useState} from "react";
 import axios from "axios";
-import {fullServer} from "@/lib/fullServer";
 import {UserAvatar} from "@/components/user-avatar";
 import qs from "query-string";
 

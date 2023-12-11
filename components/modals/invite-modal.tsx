@@ -18,7 +18,6 @@ import {Check, Copy, RefreshCw} from "lucide-react";
 import {useOrigin} from "@/hooks/use-origin";
 import {useState} from "react";
 import axios from "axios";
-import {fullServer} from "@/lib/fullServer";
 
 
 export const InviteModal = () => {

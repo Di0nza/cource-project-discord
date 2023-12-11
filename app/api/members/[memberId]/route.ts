@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 
 import { currentProfile } from "@/lib/currentProfile";
-import { fullServer } from "@/lib/fullServer";
-import { connect } from "@/lib/db";
 import mongoose from "@/schemas/mongoose";
 
 
